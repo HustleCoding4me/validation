@@ -50,3 +50,91 @@ Model에 담지 않아도 자동으로 View화면에 넘어간다. (BindingResul
 ![Screen Shot 2022-05-23 at 1 35 19 PM](https://user-images.githubusercontent.com/37995817/169744055-76499481-afbf-414e-b2ab-27f40f097214.png)
 
 
+
+
+> 오류 발생시에도 값을 유지하는 방법 FieldError를 통해 적용
+
+Integer에 문자열을 담으면, 임시적으로 사용자가 작성한 것을 담아둘 곳이 없어진다.
+그래서 FieldError의 `rejectedValue` 인자에 오류 발생시, 사용자의 value를 저장해두어서 값을 유지해주는 역할을 한다.
+
+타임리프의 th:field는 오류가 나면, 자동으로 FieldError에 보관한 값을 사용해서 값을 출력해준다.
+
+> FieldError 생성자
+
+```java
+	public FieldError(String objectName, String field, @Nullable Object rejectedValue, boolean bindingFailure,
+			@Nullable String[] codes, @Nullable Object[] arguments, @Nullable String defaultMessage) {
+
+ex) bindingResult.addError(new FieldError("item","price",item.getPrice(), false, null,null,"가격은 1,000 ~ 1,000,000 까지 허용합니다."));
+```
+* objectName : 넘어온 객체 이름 item
+* field : 객체의 필드 itemName
+* rejectedValue : 실패할 경우 오류와 함께 유지될 사용자 작성 글
+||messageProperties와 같이 가져와서 메세지를 참조하여 보여줄 수 있다.||
+* codes : 메세지 코드
+* arguments : 메세지 코드의 arguments
+
+
+
+```html
+<div>
+            <label for="price" th:text="#{label.item.price}">가격</label>
+            <input type="text" id="price" th:field="*{price}"
+                   th:errorclass="field-error"
+                   class="form-control" placeholder="가격을 입력하세요">
+            <div class="field-error" th:errors="*{price}"></div>
+</div>
+```
+
+
+```java
+ @PostMapping("/add")
+    public String addItemV2(@ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+  
+        //검증 로직
+        if (hasError(StringUtils.hasText(item.getItemName()))) {
+            bindingResult.addError(new FieldError("item","itemName",item.getItemName(), false, null,null,"상품 이름은 필수 입니다."));
+        }
+        
+        //검증에 실패하면 다시 입력 폼으로
+        //BindingResult는 자동으로 view에 넘어가기때문에, Model에 안담아도 된다.
+        if (bindingResult.hasErrors()) {
+            log.info("Errors = {}", bindingResult);
+            return "validation/v2/addForm";
+        }
+
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+```
+
+* @ModelAttribute 뒤에 BindingResult를 붙임
+* 이 BindingResult는 형변환 오류 등이 있으면 자동으로 error를 담아 옴
+* addError 메서드를 통해 어떤 객체의 어떤 변수인지, reject시 어떤 변수들을 계속 유지할지, 어떤 메세지를 남길지 적어둘 수 있음
+* 이걸 보고 th:field, th:error, th:errorclass를 사용하여 상황에 대처 가능하다.
+
+> properties에 따로 빼서 오류 메세징 처리
+
+프로젝트에서, 특정 메세지들을 따로 빼서 관리하는 것은 코드의 일관성을 좋게 한다.
+
+1. `application.properties`에 `'spring.messages.basename=messages,errors'`를 추가한다. (resources 하위에 messages, errors 폴더 밑의 properties들을 쓰겠다는 의미)
+2. properties 파일을 추가한다
+
+```properties
+required.item.itemName=상품 이름은 필수입니다.t
+range.item.price=가격은 {0} ~ {1} 까지 허용합니다.t
+max.item.quantity=수량은 최대 {0} 까지 허용합니다.t
+totalPriceMin=가격 * 수량의 합은 {0}원 이상이어야 합니다. 현재 값 = {1}t
+```
+
+3. BindingResult에 넣을 FieldError에 code, arguments 생성자를 추가해준다.
+```java
+bindingResult.addError(new ObjectError("item", new String[]{"totalPriceMin"}, new Object[]{10000,resultPrice},"");
+```
+
+
+
+
+BindingResult는 앞에 Target뒤에 바로 작성을 해야 하기 때문에, 이미 Target 정보를 담고 있다고 생각하면 된다.
