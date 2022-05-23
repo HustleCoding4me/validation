@@ -76,19 +76,14 @@ public class ValidationItemControllerV2 {
             int resultPrice = item.getPrice() * item.getQuantity();
             if (resultPrice < 10000) {
                 errors.put("globalError", "가격 * 수량의 합은 10,000 이상이여야 합니다. 현재 값 = " + resultPrice);
-                bindingResult.addError(new ObjectError("item","가격 * 수량의 합은 10,000 이상이여야 합니다. 현재 값 = " + resultPrice));
+                bindingResult.addError(new ObjectError("item", "가격 * 수량의 합은 10,000 이상이여야 합니다. 현재 값 = " + resultPrice));
             }
-
-            //검증에 실패하면 다시 입력 폼으로
-            //BindingResult는 자동으로 view에 넘어가기때문에, Model에 안담아도 된다.
-            if (bindingResult.hasErrors()) {
-                log.info("Errors = {}", bindingResult);
-                return "validation/v2/addForm";
-            }
-
-            //성공 로직
-
-            Item savedItem = itemRepository.save(item);
+        }
+        //검증에 실패하면 다시 입력 폼으로
+        //BindingResult는 자동으로 view에 넘어가기때문에, Model에 안담아도 된다.
+        if (bindingResult.hasErrors()) {
+            log.info("Errors = {}", bindingResult);
+            return "validation/v2/addForm";
         }
 
         Item savedItem = itemRepository.save(item);
