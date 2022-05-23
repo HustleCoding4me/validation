@@ -44,4 +44,9 @@ Model에 담지 않아도 자동으로 View화면에 넘어간다. (BindingResul
 * View에서 #field로 BindingResult가 지원하는 에러에 접근,
 * th:errors, th:errorclass 등으로 조건 추가하여 오류가 발생시에 오류 추가
 
+> 형변환 오류시에 BindingResult에 기본적으로 에러가 담겨서 넘어가는 모습 + 400 에러가 아닌, Controller를 실행하는 모습이다.
+
+![Screen Shot 2022-05-23 at 1 34 45 PM](https://user-images.githubusercontent.com/37995817/169743990-88e9c28b-0bc8-4df1-810e-be5cc1b64631.png)
+![Screen Shot 2022-05-23 at 1 35 19 PM](https://user-images.githubusercontent.com/37995817/169744055-76499481-afbf-414e-b2ab-27f40f097214.png)
+
 
