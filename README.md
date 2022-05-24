@@ -312,3 +312,16 @@ bindingResult.rejectValue("itemName", "required");
 ```
 
 두 코드는 같은 내용이다. 세부적인 요소는 기존 방법대로 구현해야 한다. (ValidationUtils가 공백, empty밖에 제공되지 않으므로)
+
+
+> 응용, 타입이 안맞을 경우 기본 메세지값 추가
+
+ ex) 수량에 문자를 썼을 때처럼, 스프링에서 제공하는 exception 문구 대신 넣는 방법?
+
+* BindingResult에 이미 FieldError가 담겨있고, 어떤 에러코드를 확인했는지 담겨있다.
+
+`Field error in object 'item' on field 'price': rejected value [qq]; codes [typeMismatch.item.price,typeMismatch.price,typeMismatch.java.lang.Integer,typeMismatch]; arguments [org.springframework.context.support.DefaultMessageSourceResolvable: codes [item.price,price]; arguments []; default message [price]]; default message [Failed to convert property value of type 'java.lang.String' to required type 'java.lang.Integer' for property 'price'; nested exception is java.lang.NumberFormatException: For input string: "qq"`
+
+여기서 중점은 `[typeMismatch.item.price,typeMismatch.price,typeMismatch.java.lang.Integer,typeMismatch]`
+
+* error.properties에 해당 코드들을 설정해주면, 기본 값을 변경할 수 있다.
