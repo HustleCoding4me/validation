@@ -330,3 +330,122 @@ error.properties에 해당 코드들을 설정해주면, 기본 값을 변경할
 
 ![Screen Shot 2022-05-24 at 5 03 14 PM](https://user-images.githubusercontent.com/37995817/169980981-daa06b4e-8064-4245-8fd9-48755023e841.png)
 ![Screen Shot 2022-05-24 at 5 03 29 PM](https://user-images.githubusercontent.com/37995817/169981031-f850f943-79af-4a87-9326-3127537c95f2.png)
+
+
+
+> ### 최종 Validation 기능 사용법
+
+
+* 스프링의 `import org.springframework.validation.Validator`를 상속하여 만든 클래스로 만든 
+`Validator`(ItemValidator)를 생성한다.
+---
+>> Validator 인터페이스는 supports, validate의 두 메서드로 이루어져 있는데,<br>
+> supports로 Controller에서 @Validated가 붙을 시에 해당 @ModelAttribute가 붙은 객체가<br>
+> 어떤 Validator로 검증되어야 하는지, Class로 비교하는 역할을 한다.
+```java
+
+public interface Validator {
+  
+	boolean supports(Class<?> clazz);
+
+	void validate(Object target, Errors errors);
+```
+
+>> 구현한 모습
+
+```java
+@Component
+public class ItemValidator implements Validator {
+  
+  //넘어오는 클래스가 아이템이 맞느냐, 자식까지 포함해서
+  @Override
+  public boolean supports(Class<?> clazz) {
+    return Item.class.isAssignableFrom(clazz);
+    //item == clazz
+    //item == subItem
+  }
+
+  //supports로 허가 났으면, 검증 시작
+  // * target = item, errors = 에러들
+  //Errors가 BindingResult의 부모다.
+  @Override
+  public void validate(Object target, Errors errors) {
+    Item item = (Item) target;
+
+    ValidationUtils.rejectIfEmptyOrWhitespace(errors,"itemName","required");
+    //검증 로직
+    if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
+      errors.rejectValue("price", "range");
+    }
+    if (item.getQuantity() == null || item.getQuantity() >= 9999) {
+      errors.rejectValue("quantity", "max");
+    }
+
+    //필드의 처리
+    //글로벌 에러의 처리
+    if (item.getPrice() != null && item.getQuantity() != null) {
+      int resultPrice = item.getPrice() * item.getQuantity();
+      if (resultPrice < 10000) {
+        errors.reject("totalPriceMin");
+      }
+    }
+    //검증에 실패하면 다시 입력 폼으로
+    //BindingResult는 자동으로 view에 넘어가기때문에, Model에 안담아도 된다.
+  }
+}
+
+```
+
+
+---
+
+
+* `@InitBinder` 를 컨트롤러에 선언하여, Controller에 요청이 들어올 때 마다 `WebDataBinder`에
+Validator를 추가해준다. 
+
+
+```java
+//해당 컨트롤러가 요청 될 떄 마다 validator를 항상 넣어둔다.
+private final ItemValidator itemValidator;
+@InitBinder
+public void init(WebDataBinder dataBinder) {
+    dataBinder.addValidators(itemValidator);
+}
+```
+
+---
+* Controller에 인자 맨 앞에 `@Validated` 를 선언해주면, 해당 메서드에 @ModelAttribute 객체를 보고 확인하여
+추가된 Validator들 중, 적합한 것을 찾아 검증을 실시한다.
+
+
+```java
+ //@Validated  : WebDataBind에 등록한 검증기를 실행하라라는 의미의 Anno, 그결과가 bindingResult에 담긴다.
+    //이때 supports 메서드가 사용된다.
+    @PostMapping("/add")
+    public String addItemV6(@Validated @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+        
+        //검증에 실패하면 다시 입력 폼으로
+        //BindingResult는 자동으로 view에 넘어가기때문에, Model에 안담아도 된다.
+        if (bindingResult.hasErrors()) {
+            log.info("Errors = {}", bindingResult);
+            return "validation/v2/addForm";
+        }
+
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+```
+
+---
+
+```java
+@Validated  : WebDataBind에 등록한 검증기를 실행하라라는 의미의 Anno, 그결과가 bindingResult에 담긴다.
+    
+WebDataBinder : 스프링 요청시마다 동작을 수행해주는 애라고만 알고 있으면 됨
+
+
+```
+
