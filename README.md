@@ -324,4 +324,9 @@ bindingResult.rejectValue("itemName", "required");
 
 여기서 중점은 `[typeMismatch.item.price,typeMismatch.price,typeMismatch.java.lang.Integer,typeMismatch]`
 
-* error.properties에 해당 코드들을 설정해주면, 기본 값을 변경할 수 있다.
+error.properties에 해당 코드들을 설정해주면, 기본 값을 변경할 수 있다.
+
+* errors.properties에 설정된 값으로 스프링 기본 형변환 에러의 문구를 수정하는 모습
+
+![Screen Shot 2022-05-24 at 5 03 14 PM](https://user-images.githubusercontent.com/37995817/169980981-daa06b4e-8064-4245-8fd9-48755023e841.png)
+![Screen Shot 2022-05-24 at 5 03 29 PM](https://user-images.githubusercontent.com/37995817/169981031-f850f943-79af-4a87-9326-3127537c95f2.png)
