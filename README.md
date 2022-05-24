@@ -279,3 +279,36 @@ MessageCodesResolver codeResolver = new DefaultMessageCodesResolver();
 2. "typeMismatch.age"
 3. "typeMismatch.int"
 4. "typeMismatch"
+
+
+> 오류 불러오기 예시
+
+1. `required.item.itemName`
+2. `required.itemName`
+3. `required.java.lang.String`
+4. `required`
+
+
+
+> why? 이렇게 사용할까
+
+`bindingResult` `reject` 내부에 `MessageCodeResolver` 를 도입하면서까지 messageCode를 
+디테일 -> 범용적인 코드로 나눠서 사용하는 이유는 개발할 때 편하기 위해서다.
+`MessageCodeResolver`가 디테일 -> 범용 코드드 순으로 모두 가져와주기 때문에, 개발자는 범용적인 
+ErrorCode를 작성한 뒤, 필요에 따라 디테일 한 부분을 추가해주면 되는 방식으로 개발할 수 있다.
+
+
+> 간소화를 위한 ValidationUtils
+
+ValidationUtils를 사용하면 간편한 공백, Empty 같은 것들을 간소화 할 수 있다.
+
+```java
+ValidationUtils.rejectIfEmptyOrWhitespace(bindingResult,"itemName","required");
+
+//검증 로직
+if (hasError(StringUtils.hasText(item.getItemName()))) {
+bindingResult.rejectValue("itemName", "required");
+}
+```
+
+두 코드는 같은 내용이다. 세부적인 요소는 기존 방법대로 구현해야 한다. (ValidationUtils가 공백, empty밖에 제공되지 않으므로)
