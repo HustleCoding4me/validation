@@ -512,7 +512,7 @@ public class Item {
 
 ---
 
-## Bean Validation Test Code 작성법
+## 스프링을 제외한 Bean Validation Test Code 동작 원리
 
 * `ValidatorFactory`, `Validator`를 생성한다.
 
@@ -546,6 +546,5 @@ import javax.validation.ValidatorFactory;
 
 > 결과
 
-```java
+![Screen Shot 2022-05-25 at 1 49 25 PM](https://user-images.githubusercontent.com/37995817/170182099-d8ebf5f4-2f59-489c-b208-74d86a380264.png)
 
-```
