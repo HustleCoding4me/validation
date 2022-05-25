@@ -570,20 +570,74 @@ ex) [NotNull.item.price,NotNull.price,NotNull.java.lang.Integer,NotNull]
 `FieldError`는 그냥 어노테이션으로 해결하고, `ObjectError`는 기존 bindingResult.reject로 해결하면 된다.
 
 
-
+---
 
 ## `BeanValidation` 한계극복 (모든 CRUD 페이지가 같은 어노테이션이 적용된 객체를 공유할 경우)
 
+---
 동일한 객체로 수정과 추가를 사용할 경우, 각각 다른 검증 조건을 시행해야 할 경우
 
 > 방법 2가지
 1. `groups`로 나눠서 분리하는 기능 사용
 2. 별도 From별로 전송 객체를 생성하는 방법 사용
 
-
+---
 
 > 1. `groups`로 나눠서 분리하는 기능 사용
 
-인터페이스를 생성해준다.
+공백 인터페이스를 생성해주고, 객체에 groups를 분리하여 설정해준다. 그리고 @Validated의 Value값으로 넣어주면
+해당 컨트롤러가 실행될 때 분리해서 Validation을 시행한다.
 
 
+* Interface 생성 (의미 없는 그냥 이름만)
+
+```java
+public interface UpdateCheck {
+}
+
+public interface SaveCheck {
+}
+
+
+```
+
+* 객체에 있는 validation Annotation에 groups 채워주기
+
+```java
+@Data
+public class Item {
+
+   @NotNull(groups = UpdateCheck.class)
+   private Long id;
+
+   @NotBlank(groups = {SaveCheck.class, UpdateCheck.class})
+   private String itemName;
+
+   @NotNull(groups = {SaveCheck.class, UpdateCheck.class})
+   @Range(min = 1000, max = 1000000, groups = {SaveCheck.class, UpdateCheck.class})
+   private Integer price;
+
+   @NotNull(groups = {SaveCheck.class, UpdateCheck.class})
+   @Max(value = 9999, groups = {SaveCheck.class})
+   private Integer quantity;
+}
+```
+
+* 작동하는 Controller 메서드의 @Validated의 Value 인자 채워주기 (* @Valid는 안된다)
+* 아이템이 추가할 때는 Item 객체에 SaveCheck.class 그룹들만, 수정시에는 UpdateCheck.class그룹만 된다.
+
+```java
+
+@PostMapping("/add")
+public String addItemV6(@Validated(SaveCheck.class) @ModelAttribute Item item, BindingResult bindingResult, RedirectAttributes redirectAttributes){
+        }
+        
+
+  @PostMapping("/{itemId}/edit")
+    public String edit(@PathVariable Long itemId, @Validated(UpdateCheck.class) @ModelAttribute Item item, BindingResult bindingResult){
+          }
+          
+```
+
+
+---
