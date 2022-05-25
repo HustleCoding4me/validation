@@ -480,5 +480,72 @@ Controller단에서 Validation을 구현하는 것은, 소스코드도 복잡해
 ![Screen Shot 2022-05-25 at 11 26 12 AM](https://user-images.githubusercontent.com/37995817/170166404-8221b00f-7dfd-421b-a631-0a3f2a401372.png)
 
 
+> 실 사용 모습
+
+```java
+import org.hibernate.validator.constraints.Range;
+
+import javax.validation.constraints.Max;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
+
+@Data
+public class Item {
+
+    private Long id;
+
+    @NotBlank
+    private String itemName;
+
+    @NotNull
+    @Range(min = 1000, max = 1000000)
+    private Integer price;
+
+    @NotNull
+    @Max(9999)
+    private Integer quantity;
+
+    public Item() {
+    }
+
+```
+
 ---
 
+## Bean Validation Test Code 작성법
+
+* `ValidatorFactory`, `Validator`를 생성한다.
+
+```java
+import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
+
+    ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+    Validator validator = factory.getValidator();
+```
+
+* `Bean Validation`을 의도적으로 위반한 객체를 생성한다.
+
+```java
+    Item item = new Item();
+    item.setItemName(" ");//공백
+    item.setPrice(0); //가격은 0일 수 없다.
+    item.setQuantity(10000); //양은 9999까지
+```
+
+
+* validate를 시행하고, 결과를 출력한다.
+
+```java
+    Set<ConstraintViolation<Item>> violations = validator.validate(item);
+    for (ConstraintViolation<Item> violation : violations) {
+      System.out.println("violation = " + violation);
+      System.out.println("violation.getMessage() = " + violation.getMessage());
+    }
+```
+
+> 결과
+
+```java
+
+```
