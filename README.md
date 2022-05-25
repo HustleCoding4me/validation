@@ -548,3 +548,42 @@ import javax.validation.ValidatorFactory;
 
 ![Screen Shot 2022-05-25 at 1 49 25 PM](https://user-images.githubusercontent.com/37995817/170182099-d8ebf5f4-2f59-489c-b208-74d86a380264.png)
 
+---
+
+
+## `BeanValidation`에도 원하는 ErrorCode 설정하기
+
+* `BeanValidation`은 Annotation과 동일한 이름으로 등록된다.
+ex) [NotNull.item.price,NotNull.price,NotNull.java.lang.Integer,NotNull]
+* 따라서 그냥 properties에 해당 이름을 따서 삽입해주면 된다.
+
+
+> `BeanValidation` 메시지 적용 순서
+1. 기본 생성 에러 코드 순서대로 errors.properties(허용된 properties)에서 찾는다.
+   `ex) [NotNull.item.price,NotNull.price,NotNull.java.lang.Integer,NotNull]`
+2. 어노테이션의 `message` 속성으로 찾는다. -> `@NotBlank(message="공백 {0}")`
+3. 라이브러리가 제공하는 기본 값 사용.
+
+
+> `BeanValidation`의 `ObjectError`
+추가적으로 `@ScriptAssert`란 기능이 구현되어 있는데, 복잡하고 비효율적이다.
+`FieldError`는 그냥 어노테이션으로 해결하고, `ObjectError`는 기존 bindingResult.reject로 해결하면 된다.
+
+
+
+
+## `BeanValidation` 한계극복 (모든 CRUD 페이지가 같은 어노테이션이 적용된 객체를 공유할 경우)
+
+동일한 객체로 수정과 추가를 사용할 경우, 각각 다른 검증 조건을 시행해야 할 경우
+
+> 방법 2가지
+1. `groups`로 나눠서 분리하는 기능 사용
+2. 별도 From별로 전송 객체를 생성하는 방법 사용
+
+
+
+> 1. `groups`로 나눠서 분리하는 기능 사용
+
+인터페이스를 생성해준다.
+
+
