@@ -472,3 +472,12 @@ Controller단에서 Validation을 구현하는 것은, 소스코드도 복잡해
 ## Gradle 설정
 
 `implementation 'org.springframework.boot:spring-boot-starter-validation'` 을 추가해줘야 한다.
+
+
+* `jakarta.validation:jakarta.validation-api` 그래들이 들어온 모습
+
+![Screen Shot 2022-05-25 at 11 26 12 AM](https://user-images.githubusercontent.com/37995817/170166404-8221b00f-7dfd-421b-a631-0a3f2a401372.png)
+
+
+---
+
