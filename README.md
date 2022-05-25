@@ -445,7 +445,30 @@ public void init(WebDataBinder dataBinder) {
 @Validated  : WebDataBind에 등록한 검증기를 실행하라라는 의미의 Anno, 그결과가 bindingResult에 담긴다.
     
 WebDataBinder : 스프링 요청시마다 동작을 수행해주는 애라고만 알고 있으면 됨
-
+ 
 
 ```
 
+
+
+
+
+
+
+
+## Bean Validation
+
+---
+Controller단에서 Validation을 구현하는 것은, 소스코드도 복잡해지고 한 눈에 들어오기 어려워진다.
+그래서 Spring에서는 `Bean Validation`을 사용하도록 권장한다.
+
+`Bean Validation`은 `JPA`처럼 추상 표준기술이다. 많은 구현체들이 존재하고, 대표적으로
+`하이버네이트 Validation`이 있다.
+
+
+
+---
+
+## Gradle 설정
+
+`implementation 'org.springframework.boot:spring-boot-starter-validation'` 을 추가해줘야 한다.
