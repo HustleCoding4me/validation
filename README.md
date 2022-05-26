@@ -708,4 +708,66 @@ public class ItemUpdateForm {
 * `@ModelAttribute`는 HTTP 요청 파라미터*(URL 쿼리 스트링, POST Form)을 다룰 떄 사용한다.
 * `@RequestBody`는 HTTP Body의 데이터를 객체로 변환할 때 사용(API JSON)
 
+> API 형변환 오류시 Controller 아예 작동 안하는 이유
 
+`@ModelAttribute` 는 변수 단위로 작동하기 때문에, 타입 오류가 날 때, 나머지는 작동을 시킬 수 있다.
+그런데 `@RequestBody`붙은 컨트롤러에서는 JSON으로 통짜로 받아서 @ModelAttribute로 변환시켜야 하기 때문에,
+그 사전에 `HttpMessageConverter`에서 자바객체로 변환시에 오류가 나서 아예 Controller가 작동하지 않는다.
+
+> `HttpMessageConverter`변환단계 이후, `Validation`에서 오류 발생시 API Retrun 메세지
+
+* Controller
+
+```java
+@RestController //이후 모든 메서드에 @ResponseBody 붙여준다.(return 되는 값을 Json으로 변환해줌)
+@RequestMapping("/validation/api/items")
+public class ValidationItemApiController {
+
+    @PostMapping("/add")
+    public Object addItem(@RequestBody @Validated ItemSaveForm form, BindingResult bindingResult) {
+        log.info("API 컨트롤러 호출");
+
+        if (bindingResult.hasErrors()) {
+            log.info("검증 오류 발생 errors={}", bindingResult);
+            return bindingResult.getAllErrors();
+        }
+        log.info("성공 로직 실행");
+        return form;
+    }
+}
+```
+
+* JSon Validation에 걸리게 잘못된 값 전송시
+
+```java
+[
+    {
+        "codes": [
+            "Max.itemSaveForm.quantity",
+            "Max.quantity",
+            "Max.java.lang.Integer",
+            "Max"
+        ],
+        "arguments": [
+            {
+                "codes": [
+                    "itemSaveForm.quantity",
+                    "quantity"
+                ],
+                "arguments": null,
+                "defaultMessage": "quantity",
+                "code": "quantity"
+            },
+            9999
+        ],
+        "defaultMessage": "must be less than or equal to 9999",
+        "objectName": "itemSaveForm",
+        "field": "quantity",
+        "rejectedValue": 999999,
+        "bindingFailure": false,
+        "code": "Max"
+    }
+]
+```
+
+추후 @ResponseBody를 통해 BindingResult 결과값들을 반환한 이 결과값들을 수정해줄 것이다.
