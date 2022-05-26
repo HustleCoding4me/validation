@@ -641,3 +641,71 @@ public String addItemV6(@Validated(SaveCheck.class) @ModelAttribute Item item, B
 
 
 ---
+
+
+> 2. 별도 Form별로 전송 객체를 생성하는 방법 사용
+
+등록, 수정 등 Form 별로 Java 객체를 생성해서 사용하는 방법이다.
+
+* 객체 저장시에 쓰는 Form 생성
+
+```java
+@Data
+public class ItemSaveForm {
+    @NotBlank
+    private String itemName;
+    @NotNull
+    @Range(min = 1000, max = 1000000)
+    private Integer price;
+
+    @NotNull
+    @Max(value=9999)
+    private Integer quantity;
+}
+
+   @PostMapping("/add")
+   public String addItem(@Validated @ModelAttribute("item") ItemSaveForm form, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+   }
+   }
+```
+
+* 객체 업데이트시에 쓰는 Form 생성
+
+```java
+@Data
+public class ItemUpdateForm {
+
+    @NotNull
+    private Long id;
+
+    @NotBlank
+    private String itemName;
+    @NotNull
+    @Range(min = 1000, max = 1000000)
+    private Integer price;
+
+    //수정에서는 수량은 자유롭게 변경 가능하다.
+    private Integer quantity;
+
+}
+
+   @PostMapping("/{itemId}/edit")
+   public String edit(@PathVariable Long itemId, @Validated @ModelAttribute("item") ItemUpdateForm form, BindingResult bindingResult) {
+   }
+```
+
+수정과 생성 다른 조건으로 검증할 수 있게 했다. 보통 실무에서 사용하는 방법.
+
+
+---
+
+
+## RestAPI 시에 사용되는 `Validation`
+
+
+> `@ModelAttribute vs @RequestBody`
+
+* `@ModelAttribute`는 HTTP 요청 파라미터*(URL 쿼리 스트링, POST Form)을 다룰 떄 사용한다.
+* `@RequestBody`는 HTTP Body의 데이터를 객체로 변환할 때 사용(API JSON)
+
+
